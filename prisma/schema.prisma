@@ -9,57 +9,124 @@ generator client {
 }
 
 model User {
-  id          Int          @id @default(autoincrement())
-  username    String       @unique
-  email       String       @unique
-  password    String
-  bio         String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  collections Collection[]
-  likes       Like[]
-  comments    Comment[]
+  id              Int               @id @default(autoincrement())
+  username        String            @unique
+  email           String            @unique
+  password        String
+  bio             String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  salt            String
+  passwordHash    String
+  Collection      Collection[]
+  Like            Like[]
+  Comment         Comment[]
+  MediaView       MediaView[]
+  Report          Report[]
+  BrowsingHistory BrowsingHistory[]
+  UserLibrary     UserLibrary[]
+}
+
+model UserProfile {
+  id              Int               @id @default(autoincrement())
+  userId          Int
+  bio             String?
+  profilePicture  String?
+  theme           String? // Stores the user's theme preference (e.g., dark mode, light mode)
+  updatedAt       DateTime          @updatedAt
+  user            User              @relation(fields: [userId], references: [id])
 }
 
 model Collection {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String?
-  user        User     @relation(fields: [userId], references: [id])
-  userId      Int
-  mediaItems  Int[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              Int               @id @default(autoincrement())
+  title           String
+  description     String?
+  engine          String?           @default("")
+  user            User              @relation(fields: [userId], references: [id])
+  userId          Int
+  mediaOrder      Int[]
+  isDeleted       Boolean           @default(false)
+  visibility      Visibility        @default(PUBLIC)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 }
 
 model Media {
-  id           Int         @id @default(autoincrement())
-  type         MediaType
-  url          String
-  description  String?
-  likes        Like[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  Comment      Comment[]
+  id              Int               @id @default(autoincrement())
+  type            MediaType
+  url             String
+  description     String?
+  likes           Like[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  Comment         Comment[]
+  MediaView       MediaView[]
+  Report          Report[]
+  BrowsingHistory BrowsingHistory[]
+  UserLibrary     UserLibrary[]
 }
 
 model Like {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  Media     Media    @relation(fields: [mediaId], references: [id])
-  mediaId   Int
-  createdAt DateTime @default(now())
+  id            Int          @id @default(autoincrement())
+  user          User         @relation(fields: [userId], references: [id])
+  userId        Int
+  Media         Media        @relation(fields: [mediaId], references: [id])
+  mediaId       Int
+  createdAt     DateTime     @default(now())
 }
 
 model Comment {
-  id        Int      @id @default(autoincrement())
-  content   String
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  Media     Media    @relation(fields: [mediaId], references: [id])
-  mediaId   Int
-  createdAt DateTime @default(now())
+  id            Int          @id @default(autoincrement())
+  content       String
+  user          User         @relation(fields: [userId], references: [id])
+  userId        Int
+  Media         Media        @relation(fields: [mediaId], references: [id])
+  mediaId       Int
+  createdAt     DateTime     @default(now())
+}
+
+model MediaView {
+  id            Int          @id @default(autoincrement())
+  mediaId       Int
+  userId        Int?
+  viewedAt      DateTime     @default(now())
+  media         Media        @relation(fields: [mediaId], references: [id])
+  user          User?        @relation(fields: [userId], references: [id])
+}
+
+model Report {
+  id            Int          @id @default(autoincrement())
+  reporterId    Int
+  mediaId       Int?
+  reason        ReportReason
+  status        ReportStatus @default(PENDING)
+  createdAt     DateTime     @default(now())
+  reporter      User         @relation(fields: [reporterId], references: [id])
+  media         Media?       @relation(fields: [mediaId], references: [id])
+}
+
+model BrowsingHistory {
+  id            Int          @id @default(autoincrement())
+  userId        Int
+  mediaId       Int?
+  collectionId  Int?
+  viewedAt      DateTime     @default(now())
+  user          User         @relation(fields: [userId], references: [id])
+  media         Media?       @relation(fields: [mediaId], references: [id])
+  collection    Collection?  @relation(fields: [collectionId], references: [id])
+
+  @@index(userId)
+}
+
+model UserLibrary {
+  id            Int          @id @default(autoincrement())
+  userId        Int
+  mediaId       Int?
+  savedAt       DateTime     @default(now())
+  user          User         @relation(fields: [userId], references: [id])
+  media         Media?       @relation(fields: [mediaId], references: [id])
+
+  @@unique([userId, mediaId])
 }
 
 enum MediaType {
@@ -67,4 +134,24 @@ enum MediaType {
   IMAGE
   VIDEO
   AUDIO
+  INSTRUCTION
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+  FRIENDS_ONLY
+}
+
+enum ReportReason {
+  SPAM
+  INAPPROPRIATE
+  COPYRIGHT
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  ACTION_TAKEN
 }
