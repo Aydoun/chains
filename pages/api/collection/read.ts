@@ -6,16 +6,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
     const { id } = req.query;
     try {
-      const user = await prisma.user.findUnique({
+      const collection = await prisma.collection.findUnique({
         where: { id: parseInt(id as string, 10) },
-        include: { Collection: true, BrowsingHistory: true, UserLibrary: true },
       });
 
-      if (!user) return res.status(404).json({ message: 'User not found' });
+      if (!collection) return res.status(404).json({ message: 'Collection not found' });
       
-      res.status(200).json(user);
+      res.status(200).json(collection);
     } catch (error) {
       if (error instanceof Error)
-        res.status(500).json({ error: 'Error fetching user', details: error.message });
+        res.status(500).json({ error: 'Error fetching collection', details: error.message });
     }
   }
