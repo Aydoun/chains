@@ -1,5 +1,7 @@
 import "@/app/ui/global.css";
 import { inter } from "@/app/ui/fonts";
+import Header from "./ui/components/Header";
+import Footer from "./ui/components/Footer";
 
 export default function RootLayout({
   children,
@@ -8,7 +10,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>{children}</body>
+      <body className={`${inter.className} antialiased`}>
+        <Header />
+        <main className="flex-grow pt-6 overflow-y-auto">
+          <div className="max-w-7xl mx-auto">{children}</div>
+        </main>
+        <Footer />
+      </body>
     </html>
   );
 }
