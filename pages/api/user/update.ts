@@ -15,6 +15,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(200).json(updatedUser);
     } catch (error) {
       if (error instanceof Error)
-        res.status(500).json({ error: 'Error deleting user', details: error.message });
+        res.status(500).json({ error: 'Error updating user', details: error.message });
     }
   }
